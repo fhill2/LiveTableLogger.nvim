@@ -16,7 +16,7 @@ function M.log(...)
 -- end
 
 
-local info = debug.getinfo(3, "Sl") or nil
+local info = debug.getinfo(2, "Sl") or nil
 --print(type(info))
 --print(info)
 if info == nil then 
