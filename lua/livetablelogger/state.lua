@@ -1,6 +1,13 @@
 state = {
   instances = {},
-  ui = {}
+  ui = {
+  disp1 = {
+  current_table = {},
+  },
+  disp2 = {}
+  
+
+  }
 }
 
 -- state.getstate = function()

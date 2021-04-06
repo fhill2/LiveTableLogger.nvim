@@ -6,7 +6,7 @@ local log = require'livetablelogger/log'
 
 
 function window.open_close()
-  log.log(state.ui)
+--  log.log(state.ui)
 if state.ui.bufnr == nil then print('buf not created yet') return end
 
 
