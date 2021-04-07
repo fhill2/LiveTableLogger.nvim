@@ -6,6 +6,16 @@ local log = require'livetablelogger/log'
 local renderer = require'livetablelogger/renderer'
 
 
+
+local function find_table_target_from_table(table)
+
+for view, _ in pairs(state.ui) do
+  for k, v in pairs(view) do
+    if v.target == table then return k end
+  end
+end
+return false
+end
 --==============================================================================
 
 function tablelog(name, t)
@@ -53,10 +63,16 @@ local store = t or {}
 
 local mt = {
 __index = function (self, k, v) 
-  log.log('tablelog: __index trig')
---  log.log(self)
---  log.log(k)
- -- log.log(v)
+--  log.log('tablelog: __index trig')
+
+  -- update view only if current table is present in view
+ --      local table_target = find_table_target_from_table()
+ --    if table_target ~= false then 
+ -- lo('__index RENDERER update display trig')
+ --   renderer.update_display(table_target)
+ -- end
+
+
 
 -- lo(getmetatable(store).__index())
 local value = store[k]
@@ -77,6 +93,7 @@ if type(value) == 'table' then
     return getmetatable(store).__index(self, k, v)
   end
     elseif store[k] ~= nil then
+
       return store[k] 
       end
     end
@@ -84,11 +101,9 @@ if type(value) == 'table' then
 
   end,
 __newindex = function(self, k, v) 
-  log.log('tablelog__newindex trig')
- -- log.log(self)
-  --log.log(k)
- -- log.log(v)
-    if store[k] == nil then
+ -- log.log('tablelog__newindex trig')
+ 
+  if store[k] == nil then
     if getmetatable(store) ~= nil and type(getmetatable(store).__newindex) == 'table' then
 --  if orig metatable exists and is a table
       -- then check if key in original metatable
@@ -104,11 +119,19 @@ __newindex = function(self, k, v)
       store[k] = v
        end
 
-
-   renderer.update_display(store, fullname)
       
+    -- update view only if current table is present in view
+ --        local table_target = find_table_target_from_table()
+ --    if table_target ~= false then 
+ -- lo('__new index RENDERER update display trig')
+ --   renderer.update_display(table_target)
+ -- end
+
 
      end,  
+     __tostring = function(self)
+        return vim.inspect(store)
+     end,
      __call = function(self)
 lo('call trig')
      end
@@ -188,9 +211,10 @@ setfenv(2, tablelog_env2)
 
 
 
-
+--lo(debuginfo.source)
 if debuginfo.source == '/home/f1/.config/nvim/init.lua' then
-_G[name] = setmetatable({}, mt)
+  lo('debuginfo trig')
+_G[name] = return_obj
 end
 
 

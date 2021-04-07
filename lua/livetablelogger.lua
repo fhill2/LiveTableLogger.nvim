@@ -57,7 +57,7 @@ local window = require'livetablelogger/window'
 
 return {
   state = state,
-  open_close = window.open_close,
+  open = window.open,
   focus = window.focus
 }
 

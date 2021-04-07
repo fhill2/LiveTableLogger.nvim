@@ -26,12 +26,12 @@ local tstate = {
 
 local livetablelogger = function(opts)
 
-lo('ltl ran!!')
+--lo('ltl ran!!')
 
 
 local objs = {}
 for k, v in pairs(state.instances) do
-lo(v)
+--lo(v)
 table.insert(objs, {
 
   name = k
