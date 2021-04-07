@@ -11,29 +11,33 @@ end
 
 
 popup_custom_opts = {
-layout = 'vertical',
-pin = 'bottom',
+layout = 'horizontal',
+--pin = 'right',
+log = false
 }
 
 
 
+local function ternary(condition, if_true, if_false)
+  if condition then return if_true else return if_false end
+end
 
-local function isPin(colrow, pin)
+
+
+local function is_pin(colrow, pin, width, height)
+-- print(colrow)
+-- print(pin)
+-- print(width)
+-- print(height)
+
 -- col row = true if col, false if row
+--if pin == nil then return false end
 if pin == nil then return false end
-if pin == 'top' then return colrow and true or false end 
-if pin == 'right' then return colrow and true or false end 
-if pin == 'bottom' then return colrow and true or false end 
-if pin == 'left' then return colrow and true or false end 
+if pin:find('top') then return ternary(colrow,false,1) end 
+if pin:find('right') then return ternary(colrow,vim.o.columns - width,false) end 
+if pin:find('bottom') then return ternary(colrow,false,vim.o.lines - height - vim.o.cmdheight) end 
+if pin:find('left') then return ternary(colrow,1,false) end 
 
--- if layout == 'top' and colrow = 'col' then 
--- elseif layout == 'top' and colrow = 'row' then
--- elseif layout == 'right' and colrow = 'row' then 
--- elseif layout == 'right' and colrow = 'row' then 
--- elseif layout == 'bottom' and colrow = 'row' then 
--- elseif layout == 'bottom' and colrow = 'row' then 
--- elseif layout == 'left' and colrow = 'row' then 
--- elseif layout == 'left' and colrow = 'row' then 
 
 end
 
@@ -53,21 +57,29 @@ end
 --end
 
 
-print(isPin(true, popup_custom_opts.pin))
-print(isPin(false, popup_custom_opts.pin))
 
--- vertical test
+
+
+local width = vim.o.columns * 0.8
+local height = vim.o.lines * 0.3
+local relative = 'editor'
+local anchor = 'NW'-- is_pin_anchor(popup_custom_opts.pin) -- anchor NW because vim.o.lines is 0-1 top-bottom1 vim.o.columns is o-1 left-right
+local col = is_pin(true, popup_custom_opts.pin, width, height) or vim.o.columns * 0.5
+local row = is_pin(false, popup_custom_opts.pin, width, height) or vim.o.lines * 0.5
+
+-- transformation values for pin
 local popup_opts = {
-   relative = 'editor',
-  col = isPin(true, popup_custom_opts.pin) and vim.o.columns or vim.o.columns * 0.5,
-  height = vim.o.lines * 0.3,
-  row = isPin(false, popup_custom_opts.pin) and vim.o.lines or vim.o.lines * 0.5,
-  width = vim.o.columns * 0.8,
- anchor = 'NW' -- anchor NW because vim.o.lines is 0-1 top-bottom1 vim.o.columns is o-1 left-right
+  col = col,
+  row = row,
+  width = width,
+  height = height,
+  relative = relative,
+  anchor = anchor
 } 
 
 
-
+--print(is_pin(true, popup_custom_opts.pin, width, height))
+--print(is_pin(false, popup_custom_opts.pin, width, height))
 
 
 
@@ -76,11 +88,12 @@ local log_opts = {}
 
 
 -- apply pin
-if popup_custom_opts.pin ~= nil then 
-  if popup_custom_opts.pin == 'btm' or popup_custom_opts.pin == 'bottom' then
+-- if popup_custom_opts.pin ~= nil then 
+--   if popup_custom_opts.pin == 'btm' or popup_custom_opts.pin == 'bottom' then
 
-  end
-end
+--   end
+-- end
+
 
 
 
@@ -107,29 +120,18 @@ elseif popup_custom_opts.layout == 'vertical' then
 obj_opts = {
  col = math.floor(popup_opts.col),
  row = math.floor(popup_opts.row),
- width = math.floor(popup_opts.width / 2),
- height = math.floor(popup_opts.height)
+ width = math.floor(popup_opts.width),
+ height = math.floor(popup_opts.height / 2)
 }
 
 log_opts = {
-col = math.floor(popup_opts.col + popup_opts.width / 2),
-row = math.floor(popup_opts.row),
-width = math.floor(popup_opts.width / 2),
-height = math.floor(popup_opts.height)
+col = math.floor(popup_opts.col),
+row = math.floor(popup_opts.row + popup_opts.height / 2),
+width = math.floor(popup_opts.width),
+height = math.floor(popup_opts.height /2)
 }
 
 end
-
-
--- pin
-
--- if popup_custom_opts.layout == 'horizontal' then
-
--- else popup_custom_opts.layout == 'vertical' then
-
--- end
-
-
 
 
 
@@ -183,7 +185,23 @@ vim.api.nvim_set_current_win(prevwin)
 --resize_window()
 
 --- old
+
+-- if pin == 'top' then return ternary(colrow,true,false) end 
+-- if pin == 'right' then return ternary(colrow,true,false) end 
+-- if pin == 'bottom' then return ternary(colrow,false,vim.o.lines - height - vim.o.cmdheight) end 
+-- if pin == 'left' then return ternary(colrow,true,false) end 
+
+-- if layout == 'top' and colrow = 'col' then 
+-- elseif layout == 'top' and colrow = 'row' then
+-- elseif layout == 'right' and colrow = 'row' then 
+-- elseif layout == 'right' and colrow = 'row' then 
+-- elseif layout == 'bottom' and colrow = 'row' then 
+-- elseif layout == 'bottom' and colrow = 'row' then 
+-- elseif layout == 'left' and colrow = 'row' then 
+-- elseif layout == 'left' and colrow = 'row' then 
+
 -- -- reformat obj so nvim_open_win doesnt error on custom keys
+
 -- local obj_opts = layout = obj_opts.layout,  
 -- local log_opts = 
 -- input only necessary keys to matrix and merge with other popup_opts keys after function return
