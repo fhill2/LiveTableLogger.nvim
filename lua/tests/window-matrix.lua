@@ -97,8 +97,8 @@ local popup_opts = {
   height = start_popup_opts.height,
   relative = start_popup_opts.relative,
   win = start_popup_opts.win,
-  anchor = 'NW'
-} 
+  anchor = 'NW',
+ } 
 
 -- if popup_opts.relative == 'win' then
 -- end
