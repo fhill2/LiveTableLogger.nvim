@@ -1,6 +1,7 @@
 
 lo('====== RUN AGAIN =======')
 
+local border = 'require plenary/window/border'
 local reset = false
 
 if reset then
@@ -10,14 +11,9 @@ return
 end
 
 
-popup_custom_opts = {
-layout = 'vertical',
-pin = 'topright',
-log = true,
-scope = 'window'
-}
 
-local function is_window_scoped(popup_custom_opts) if scope == 'window' then return true elseif scope == 'editor' then return false end
+
+local function is_window_scoped(popup_custom_opts) if popup_opts.relative == 'win' then return true elseif popup_opts.relative == 'editor' then return false end end
 
 
 local function ternary(condition, if_true, if_false)
@@ -26,73 +22,105 @@ end
 
 
 
-local function apply_pin(colrow, pin, width, height)
-if pin == nil then return false end
+local function apply_pin(colrow, popup_opts, popup_custom_opts)
 
+ 
+if popup_custom_opts.pin == nil then return false end
 
+local max_columns, max_row = popup_opts.max_col, popup_opts.max_row
+local width, height = popup_opts.width, popup_opts.height
 
 local choose_pin = {
 top = ternary(colrow,false,1), 
-topright = ternary(colrow, columns - width, 1),
-right =  ternary(colrow,columns - width,false), 
-bottomright =ternary(colrow, columns - width, lines - height),
-bottom = ternary(colrow,false, lines - height), -- -1 for statusline
-bottomleft = ternary(colrow, 1, lines - height), -- -1 for statusline
+topright = ternary(colrow, max_columns - width, 1),
+right =  ternary(colrow, max_columns - width,false), 
+bottomright = ternary(colrow, max_columns - width, max_row - height),
+bottom = ternary(colrow,false, max_row - height), -- -1 for statusline
+bottomleft = ternary(colrow, 1, max_row - height), -- -1 for statusline
 left = ternary(colrow,1,false), 
 topleft = ternary(colrow, 1, 1)
 }
-
-
-
--- if pin == 'top' then return end 
--- if pin == 'right' then returnend 
--- if pin == 'bottom' then return end 
--- if pin == 'left' then return end 
-
-return choose_pin[pin]
+return choose_pin[popup_custom_opts.pin]
 end
 
 
 
+local popup_custom_opts = {
+layout = 'vertical',
+pin = 'right',
+log = true,
+--scope = 'window',
+grow = true,
+grow_side = 'smart'
+}
+
+
+if popup_custom_opts.scope == 'window' then
+cwin = {}
+yx = vim.api.nvim_call_function('win_screenpos', {0}) 
+cwin_col, cwin_row = yx[2], yx[1]
+cwin_width = vim.api.nvim_call_function('winwidth', {0})
+cwin_height = vim.api.nvim_call_function('winheight', {0})
+
+cwin = {
+col = cwin_col,
+row = cwin_row,
+width = cwin_width,
+height = cwin_height,
+max_col = cwin_row + cwin_width,
+max_row = cwin_col + cwin_height,
+}
+
+end
+
+lo('cwin is: ') 
+lo(cwin)
+--vim.api.nvim_open_win(0, false, cwin)
+
+
+local start_popup_opts = {
+col = 0.4,
+row = 0.4,
+width = 40,
+height = 40,
+max_col = ternary(is_window_scoped(popup_custom_opts), cwin.max_col -1, vim.o.columns -1),
+max_row = ternary(is_window_scoped(popup_custom_opts), cwin.max_row , vim.o.lines),
+relative = 'win'
+}
 
 
 
-local width = 40
-local height = 40
 
--- horizontal test
--- local col = is_pin(true, popup_custom_opts.pin, width, height) or vim.o.columns * 0.5
--- local row = is_pin(false, popup_custom_opts.pin, width, height) or vim.o.lines * 0.5
 
 -- vertical test
-local col = apply_pin(true, popup_custom_opts.pin, width, height) or vim.o.columns * 0.4
-local row = apply_pin(false, popup_custom_opts.pin, width, height) or vim.o.lines * 0.4
+local col = apply_pin(true, start_popup_opts, popup_custom_opts) or start_popup_opts.max_col * start_popup_opts.col
+lo('after pin: ')
+lo(col)
 
--- local columns = ternary(, , vim.o.columns)
--- local lines = ternary(, , vim.o.lines) - vim.o.cmdheight - 1
-
-
-local relative = 'editor'
-local anchor = 'NW'-- is_pin_anchor(popup_custom_opts.pin) -- anchor NW because vim.o.lines is 0-1 top-bottom1 vim.o.columns is o-1 left-right
+local row = apply_pin(false, start_popup_opts, popup_custom_opts) or start_popup_opts.max_row * start_popup_opts.row
 
 -- transformation values for pin
 local popup_opts = {
   col = col,
   row = row,
-  width = width,
-  height = height,
-  relative = relative,
-  anchor = anchor
+  width = start_popup_opts.width,
+  height = start_popup_opts.height,
+  relative = 'editor',
+  anchor = 'NW'
 } 
 
 
-lo('popup_opts at start is: ')
-lo(popup_opts)
+--lo('popup_opts at start is: ')
+--lo(popup_opts)
 
 --print(is_pin(true, popup_custom_opts.pin, width, height))
 --print(is_pin(false, popup_custom_opts.pin, width, height))
 
 local function create_window(popup_opts, popup_custom_opts, objlog)
+
+local border = require 'plenary/window/border'
+
+
 local popup_opts = vim.deepcopy(popup_opts) -- important
 lo('popup_opts start of create window: ')
 lo(popup_opts)
@@ -104,10 +132,12 @@ if popup_custom_opts.layout == 'horizontal' then layout_bool = true elseif popup
 --local objlog
 --if objlog == 'obj' then objlog = true elseif objlog == 'log' then objlog = false end 
 
-popup_opts.col = math.ceil(ternary(objlog, ternary(layout_bool, popup_opts.col, popup_opts.col ), ternary(layout_bool, popup_opts.col + popup_opts.width / 2, popup_opts.col)))
-popup_opts.row = math.ceil(ternary(objlog, ternary(layout_bool, popup_opts.row , popup_opts.row), ternary(layout_bool, popup_opts.row, popup_opts.row + popup_opts.height / 2)))
-popup_opts.width = math.ceil(ternary(objlog,ternary(layout_bool, popup_opts.width / 2, popup_opts.width),ternary(layout_bool, popup_opts.width / 2 , popup_opts.width)))
-popup_opts.height = math.ceil(ternary(objlog, ternary(layout_bool, popup_opts.height , popup_opts.height / 2 ), ternary(layout_bool, popup_opts.height, popup_opts.height /2)))
+popup_opts.col = math.floor(ternary(objlog, ternary(layout_bool, popup_opts.col, popup_opts.col ), ternary(layout_bool, popup_opts.col + popup_opts.width / 2, popup_opts.col)))
+popup_opts.row = math.floor(ternary(objlog, ternary(layout_bool, popup_opts.row , popup_opts.row), ternary(layout_bool, popup_opts.row, popup_opts.row + popup_opts.height / 2)))
+popup_opts.width = math.floor(ternary(objlog,ternary(layout_bool, popup_opts.width / 2, popup_opts.width),ternary(layout_bool, popup_opts.width / 2 , popup_opts.width)))
+popup_opts.height = math.floor(ternary(objlog, ternary(layout_bool, popup_opts.height , popup_opts.height / 2 ), ternary(layout_bool, popup_opts.height, popup_opts.height /2)))
+
+
 
 
 
@@ -124,35 +154,48 @@ end
 local bufnr1count = vim.tbl_count(bufnr1content)
 vim.api.nvim_buf_set_lines(bufnr1, 0, -1, true, bufnr1content)
 
-return vim.api.nvim_open_win(bufnr1, false, popup_opts), popup_opts
 
+
+
+local winnr = vim.api.nvim_open_win(bufnr1, false, popup_opts)
+--local winnr = border:new(bufnr1, winnr, popup_opts)
+return winnr, popup_opts
 end
 
 
 
 --if vim.g.winnr1 == nil and vim.g.winnr2 == nil then
 if popup_custom_opts.log then 
-lo('picked 2 windows')
+--lo('picked 2 windows')
 vim.g.winnr1, obj_opts = create_window(popup_opts, popup_custom_opts, true)
 vim.g.winnr2, log_opts = create_window(popup_opts, popup_custom_opts, false)
-lo('obj opts')
-lo(obj_opts)
-lo('log_opts')
-lo(log_opts)
+--lo('obj opts')
+--lo(obj_opts)
+--lo('log_opts')
+--lo(log_opts)
 
 else
 vim.g.winnr1, obj_opts = create_window(popup_opts, popup_custom_opts, true)
 end
---end
 
--- bufnr after win creation, need winnr to resize dependant on info
 
--- if vim.g.winnr1 == nil and vim.g.winnr2 == nil then
--- vim.g.winnr1 = vim.api.nvim_open_win(bufnr1, false, obj_opts)
--- vim.g.winnr2 = vim.api.nvim_open_win(bufnr2, false, log_opts)
---  end
---local function resize_window()
+--obj_opts.height = 100
+
+vim.defer_fn(function()
+
+
+local function choose_grow_side(popup_custom_opts)
+
+
+end
+
+
+
 local prevwin = vim.api.nvim_get_current_win()
+
+if popup_custom_opts.grow == true and popup_custom_opts.grow_side == 'smart' then
+popup_custom_opts.grow_side = choose_grow_side(popup_custom_opts)
+end
 
 if vim.g.winnr1 ~= nil then
 vim.api.nvim_set_current_win(vim.g.winnr1)
@@ -167,6 +210,21 @@ end
 
 vim.api.nvim_set_current_win(prevwin)
 
+end, 1000)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -174,6 +232,19 @@ vim.api.nvim_set_current_win(prevwin)
 
 
 -- old
+--end
+-- horizontal test
+-- local col = is_pin(true, popup_custom_opts.pin, width, height) or vim.o.columns * 0.5
+-- local row = is_pin(false, popup_custom_opts.pin, width, height) or vim.o.lines * 0.5
+--lo(start_popup_opts)
+
+-- bufnr after win creation, need winnr to resize dependant on info
+
+-- if vim.g.winnr1 == nil and vim.g.winnr2 == nil then
+-- vim.g.winnr1 = vim.api.nvim_open_win(bufnr1, false, obj_opts)
+-- vim.g.winnr2 = vim.api.nvim_open_win(bufnr2, false, log_opts)
+--  end
+--local function resize_window()
 
 
 -- horizontal test
