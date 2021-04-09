@@ -6,40 +6,27 @@ local log = require'livetablelogger/log'
 
 --local tablelog = require'livetablelogger/tablelog'
 
-local function create_buf(view)
+local function create_buf(view, objlog)
+  -- use objlog either 'obj' or 'log' to choose diff settings for buffers
+  local bufnr = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_option(bufnr, 'filetype', 'lua')
+--state.ui[view].bufnr = bufnr
+return bufnr
 end
 
 
 
 
 
-function renderer.update_display(view)
-if state.ui[view].bufnr ~= nil then return end
-
-
-
-
-
+function renderer.update_obj_display(view)
 
 -- get table target
 local target = state.ui[view].target
 
-
-if state.ui[view].bufnr == nil then 
-  local bufnr = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_set_option(bufnr, 'filetype', 'lua')
-state.ui[view].bufnr = bufnr
-end
---lo(state.ui[view].bufnr)
-
-
-
 vim.defer_fn(function()
 local target = inspect.inspect(target)
-  vim.api.nvim_buf_set_lines(state.ui[view].bufnr, 0, -1, true, target)
-
-
-vim.api.nvim_buf_call(state.ui[view].bufnr, function()
+  vim.api.nvim_buf_set_lines(state.ui[view].obj.bufnr, 0, -1, true, target)
+vim.api.nvim_buf_call(state.ui[view].obj.bufnr, function()
 
 -- remember window has to be open before, if you want to not automatically open window on run you have to set autocmd and find au that can load fold marker on win load
 

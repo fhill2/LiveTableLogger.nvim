@@ -207,38 +207,38 @@ end
 
 
 
-vim.defer_fn(function()
+-- vim.defer_fn(function()
 
 
-local function choose_grow_side(popup_custom_opts)
+-- local function choose_grow_side(popup_custom_opts)
 
 
-end
+-- end
 
 
 
-local prevwin = vim.api.nvim_get_current_win()
+-- local prevwin = vim.api.nvim_get_current_win()
 
-if popup_custom_opts.grow == true and popup_custom_opts.grow_side == 'smart' then
-popup_custom_opts.grow_side = choose_grow_side(popup_custom_opts)
-end
-lo('before move')
-lo(obj_opts)
-lo(log_opts)
-if vim.g.winnr1 ~= nil then
-vim.api.nvim_set_current_win(vim.g.winnr1)
-vim.api.nvim_win_set_config(vim.g.winnr1, obj_opts)
-end
+-- if popup_custom_opts.grow == true and popup_custom_opts.grow_side == 'smart' then
+-- popup_custom_opts.grow_side = choose_grow_side(popup_custom_opts)
+-- end
+-- lo('before move')
+-- lo(obj_opts)
+-- lo(log_opts)
+-- if vim.g.winnr1 ~= nil then
+-- vim.api.nvim_set_current_win(vim.g.winnr1)
+-- vim.api.nvim_win_set_config(vim.g.winnr1, obj_opts)
+-- end
 
-if vim.g.winnr2 ~= nil then
-vim.api.nvim_set_current_win(vim.g.winnr2)
-vim.api.nvim_win_set_config(vim.g.winnr2, log_opts)
-end
+-- if vim.g.winnr2 ~= nil then
+-- vim.api.nvim_set_current_win(vim.g.winnr2)
+-- vim.api.nvim_win_set_config(vim.g.winnr2, log_opts)
+-- end
 
 
-vim.api.nvim_set_current_win(prevwin)
+-- vim.api.nvim_set_current_win(prevwin)
 
-end, 1000)
+-- end, 1000)
 
 
 

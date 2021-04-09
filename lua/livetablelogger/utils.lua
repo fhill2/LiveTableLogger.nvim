@@ -44,6 +44,11 @@ utils.get_default = function(x, default)
   return utils.if_nil(x, default, x)
 end
 
+utils.ternary = function(condition, if_true, if_false)
+  if condition then return if_true else return if_false end
+end
+
+
 
 
 

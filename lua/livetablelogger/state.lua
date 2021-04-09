@@ -5,9 +5,19 @@ local state = {
 
 
 
+
+
 local state_ui_mt = {}
+
+state_ui_mt.__index = function(self, k ,v )
+lo('state.ui __index trig')
+lo('did it update 12345')
+ 
+end
+
+
 state_ui_mt.__newindex = function(self, k, v)
-  lo('state.ui __newindex trig')
+  lo('state.ui __newindex trigger')
 --  lo(self)
  -- lo(key)
  -- lo(value)
