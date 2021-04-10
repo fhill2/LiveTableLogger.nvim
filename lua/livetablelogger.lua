@@ -9,7 +9,7 @@
 
 --local livetablelogger = {}
 
-local tablelogger = require'livetablelogger/tablelog'
+local logger = require'livetablelogger/loggers'
 
 local state = require 'livetablelogger/state'
 local window = require'livetablelogger/window'
@@ -58,7 +58,8 @@ local window = require'livetablelogger/window'
 return {
   state = state,
   open = window.open,
-  focus = window.focus
+  focus = window.focus,
+  log = logger
 }
 
 ---- lATEST

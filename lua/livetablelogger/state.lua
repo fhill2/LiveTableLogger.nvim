@@ -7,23 +7,29 @@ local state = {
 
 
 
-local state_ui_mt = {}
+-- local state_ui_mt = {}
 
-state_ui_mt.__index = function(self, k ,v )
-lo('state.ui __index trig')
-lo('did it update 12345')
+-- state_ui_mt.__index = function(self, k ,v )
+-- lo('state.ui __index trig')
+-- lo('did it update 12345')
  
-end
+-- end
 
 
-state_ui_mt.__newindex = function(self, k, v)
-  lo('state.ui __newindex trigger')
---  lo(self)
- -- lo(key)
- -- lo(value)
-  rawset(state.ui, k, v)
+-- state_ui_mt.__newindex = function(self, k, v)
+--   lo('state.ui __newindex trigger')
+-- --  lo(self)
+--  -- lo(key)
+--  -- lo(value)
+--   rawset(state.ui, k, v)
 
-end
+--end
+
+--setmetatable(state.ui, state_ui_mt)
+
+return state
+
+-- old
 
 -- ui = {
 --   disp1 = {
@@ -41,9 +47,4 @@ end
 -- state.getstate = function()
 --   return State.instances[vim.api.nvim_get_current_buf()]
 -- end
-
-setmetatable(state.ui, state_ui_mt)
-
-return state
-
 

@@ -1,37 +1,67 @@
-local renderer = {}
-local window = require'livetablelogger/window'
+--local renderer = {}
+
+
+
 local state = require'livetablelogger/state'
 local inspect = require'livetablelogger/inspect'
 local log = require'livetablelogger/log'
 
 --local tablelog = require'livetablelogger/tablelog'
+Renderer = {}
+Renderer.__index = Renderer
 
-local function create_buf(view, objlog)
+function Renderer:new(opts)
+  opts = opts or {}
+
+
+  --lo('self at renderer: ') 
+  --lo(self)
+  --lo(opts)
   -- use objlog either 'obj' or 'log' to choose diff settings for buffers
-  local bufnr = vim.api.nvim_create_buf(false, true)
+
+-- create buffer
+--if not self.obj_bufnr then 
+  opts.obj_bufnr = vim.api.nvim_create_buf(false, true)
   vim.api.nvim_buf_set_option(bufnr, 'filetype', 'lua')
---state.ui[view].bufnr = bufnr
-return bufnr
+--end
+
+if opts.log then
+  opts.obj_bufnr = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_option(bufnr, 'filetype', 'lua')
+end
+
+
+
+return setmetatable(opts, Renderer)
 end
 
 
 
 
+function Renderer:refresh()
 
-function renderer.update_obj_display(view)
+--lo(self)
+--lo(self.target)
+--lo(inspect.inspect(self.target))
 
--- get table target
-local target = state.ui[view].target
+--lo(self.target)
+--lo(state.instances[self.target].store)
+--lo(state.instances)
+
 
 vim.defer_fn(function()
-local target = inspect.inspect(target)
-  vim.api.nvim_buf_set_lines(state.ui[view].obj.bufnr, 0, -1, true, target)
-vim.api.nvim_buf_call(state.ui[view].obj.bufnr, function()
+ vim.api.nvim_buf_set_lines(self.obj_bufnr, 0, -1, true, inspect.inspect(state.instances[self.target].store))
+
+
+vim.api.nvim_buf_call(self.obj_bufnr, function()
+
+ vim.cmd('setlocal nocursorcolumn')
+  vim.api.nvim_win_set_option(win_id, 'winblend', 15)
+
+
 
 -- remember window has to be open before, if you want to not automatically open window on run you have to set autocmd and find au that can load fold marker on win load
 
---vim.api.nvim_command([[setlocal foldmarker=-->>>>,--<<<<]])
---vim.cmd([[set foldmethod=marker]])
 --vim.api.nvim_command([[exe "norm! gg=G"]])
 
 end)
@@ -44,7 +74,22 @@ end
 
 
 
-return renderer
+return Renderer
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 -- old

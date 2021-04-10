@@ -1,11 +1,11 @@
 local popup_opts =  {
-col = 1,
-row = 1,
+col = vim.o.columns,
+row = vim.o.lines,
 width = 40,
 height = 40,
-relative = 'win',
-win = 0,
-anchor = 'NE',
+relative = 'editor',
+--win = 0,
+anchor = 'NW',
 }
 
 vim.api.nvim_open_win(vim.api.nvim_create_buf(false, false), false, popup_opts)

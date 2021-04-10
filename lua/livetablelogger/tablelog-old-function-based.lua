@@ -7,15 +7,15 @@ local renderer = require'livetablelogger/renderer'
 
 
 
-local function find_table_target_from_table(table)
+-- local function find_table_target_from_table(table)
 
-for view, _ in pairs(state.ui) do
-  for k, v in pairs(view) do
-    if v.target == table then return k end
-  end
-end
-return false
-end
+-- for view, _ in pairs(state.ui) do
+--   for k, v in pairs(view) do
+--     if v.target == table then return k end
+--   end
+-- end
+-- return false
+-- end
 --==============================================================================
 
 function tablelog(name, t)
