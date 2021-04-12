@@ -1,14 +1,5 @@
 local popup = require('popup')
 
--- local popup_opts =  {
--- col = 60,
--- row = 60,
--- width = 60,
--- height = 60,
--- relative = 'editor',
--- style = 'minimal',
--- anchor = 'NW',
--- }
 
 local popup_opts = {
 border = {},

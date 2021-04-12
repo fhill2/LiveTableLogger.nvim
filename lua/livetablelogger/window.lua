@@ -21,28 +21,14 @@ Window.__index = Window
 
 
 
---lo(renderer)
-
--- local function switch_view_target(view, target)
--- end
 
 
 
-local atable = {
-bad_format_table = {
-},
-cheese ={a=1, b=2},
-another_bad_format = {}
-}
 
 
 
   
 function Window:new(opts)
---lo('self is: ')
---lo(self)
-
-lo('asdasdasd')
 
 -- ============================================= OPTS =================================================
 opts = opts or {}
@@ -498,6 +484,40 @@ return windows
 
 -- dont worry about yet
 -- end
+
+
+-- opts.border.borderchars = get_default(opts.border.borderchars, { '─', '│', '─', '│', '╭', '╮', '╯', '╰'})
+
+-- opts.border.obj_border_opts = {
+-- title = get_default(opts.border.obj_title, 'obj'),
+-- border_thickness = { 
+-- top = get_default(opts.border.thickness.top, 1),
+-- right = get_default(opts.border.thickness.right, 1),
+-- bot = get_default(opts.border.thickness.bot, 1),
+-- left = get_default(opts.border.thickness.left, 1),
+-- }
+-- }
+
+-- opts.border.log_border_opts = {
+-- title = get_default(opts.border.log_title, 'log'),
+-- border_thickness = { 
+-- top = get_default(opts.border.thickness.top, 1),
+-- right = get_default(opts.border.thickness.right, 1),
+-- bot = get_default(opts.border.thickness.bot, 1),
+-- left = get_default(opts.border.thickness.left, 1),
+-- }
+-- }
+
+--   -- borderchars list to kv for plenary border
+-- local borderchars_kv = {}
+-- local titlechars = { 'top', 'left', 'bot', 'right', 'topleft', 'topright', 'botright', 'botleft' }
+-- for i, v in ipairs(opts.border.borderchars) do
+-- borderchars_kv[titlechars[i]] = v
+-- end
+
+
+-- obj_border_opts = vim.tbl_extend('keep', borderchars_kv, opts.border.obj_border_opts )
+-- log_border_opts = vim.tbl_extend('keep', borderchars_kv,  opts.border.log_border_opts )
 
 
 -- old window
