@@ -5,31 +5,41 @@
 local state = require'livetablelogger/state'
 local inspect = require'livetablelogger/inspect'
 local log = require'livetablelogger/log'
+local Border = require'livetablelogger/border'
 
 --local tablelog = require'livetablelogger/tablelog'
 Renderer = {}
 Renderer.__index = Renderer
 
-function Renderer:new(opts)
+function Renderer:new(win_self)
+ -- opts is window self 
   opts = opts or {}
-
+  -- lo(state)
+--  lo(self)
+--lo('renderer')
+-- lo(opts)
+-- lo(self)
 
   --lo('self at renderer: ') 
   --lo(self)
   --lo(opts)
   -- use objlog either 'obj' or 'log' to choose diff settings for buffers
 
+
 -- create buffer
 --if not self.obj_bufnr then 
-  opts.obj_bufnr = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_set_option(bufnr, 'filetype', 'lua')
---end
+ win_self.obj_bufnr = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_option(win_self.obj_bufnr, 'filetype', 'lua')
+ --Border._create_lines(opts.obj_opts, opts.obj_border_opts)
+ 
+ --vim.api.nvim_buf_set_lines(obj_bufnr, 0, -1, false, contents)
 
-if opts.log then
-  opts.obj_bufnr = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_set_option(bufnr, 'filetype', 'lua')
-end
 
+-- if opts.log then
+--   win_self.log_bufnr = vim.api.nvim_create_buf(false, true)
+--   vim.api.nvim_buf_set_option(win_self.log_bufnr, 'filetype', 'lua')
+
+-- end
 
 
 return setmetatable(opts, Renderer)
@@ -38,7 +48,9 @@ end
 
 
 
-function Renderer:refresh()
+function Renderer:refresh(win_self)
+  local obj = {}
+lo('renderer refresh here')
 
 --lo(self)
 --lo(self.target)
@@ -48,24 +60,25 @@ function Renderer:refresh()
 --lo(state.instances[self.target].store)
 --lo(state.instances)
 
-
-vim.defer_fn(function()
- vim.api.nvim_buf_set_lines(self.obj_bufnr, 0, -1, true, inspect.inspect(state.instances[self.target].store))
-
-
-vim.api.nvim_buf_call(self.obj_bufnr, function()
-
- vim.cmd('setlocal nocursorcolumn')
-  vim.api.nvim_win_set_option(win_id, 'winblend', 15)
-
-
-
+--vim.defer_fn(function()
+ vim.api.nvim_buf_set_lines(win_self.obj_bufnr, 0, -1, true, inspect.inspect(state.instances[win_self.target].store))
+--vim.api.nvim_buf_call(self.obj_bufnr, function()
 -- remember window has to be open before, if you want to not automatically open window on run you have to set autocmd and find au that can load fold marker on win load
-
 --vim.api.nvim_command([[exe "norm! gg=G"]])
+--end)
+lo(win_self)
+  local contents = Border._create_lines(win_self.obj_opts, win_self.border_opts.obj)
+ lo(contents)
+ lo(win_self.obj_bufnr)
+  vim.api.nvim_buf_set_lines(win_self.obj_bufnr, 0, -1, false, contents)
+ vim.api.nvim_buf_set_lines(win_self.obj_bufnr, 0, -1, false, {'a test', 'asd'})
 
-end)
-end, 1)
+--end, 1)
+
+-- Border:new(win_self.obj_bufnr, win_self.obj_opts, win_self.obj_border_opts)
+
+
+
 end
 
 
