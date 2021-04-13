@@ -12,24 +12,15 @@ Renderer = {}
 Renderer.__index = Renderer
 
 function Renderer:new(win_self)
- -- opts is window self 
   opts = opts or {}
-  -- lo(state)
---  lo(self)
---lo('renderer')
--- lo(opts)
--- lo(self)
+ -- win_self.obj_bufnr = vim.api.nvim_create_buf(false, true)
+ --  vim.api.nvim_buf_set_option(win_self.obj_bufnr, 'filetype', 'lua')
 
-  --lo('self at renderer: ') 
-  --lo(self)
-  --lo(opts)
-  -- use objlog either 'obj' or 'log' to choose diff settings for buffers
+
 
 
 -- create buffer
 --if not self.obj_bufnr then 
- win_self.obj_bufnr = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_set_option(win_self.obj_bufnr, 'filetype', 'lua')
  --Border._create_lines(opts.obj_opts, opts.obj_border_opts)
  
  --vim.api.nvim_buf_set_lines(obj_bufnr, 0, -1, false, contents)
@@ -50,28 +41,16 @@ end
 
 function Renderer:refresh(win_self)
   local obj = {}
-lo('renderer refresh here')
+--lo('renderer refresh here')
 
---lo(self)
---lo(self.target)
---lo(inspect.inspect(self.target))
-
---lo(self.target)
---lo(state.instances[self.target].store)
---lo(state.instances)
-
+vim.api.nvim_buf_set_lines(win_self.bufnr.obj, 0, -1, true, inspect.inspect(state.instances[win_self.target].store))
+ --- actual renderer above here
 --vim.defer_fn(function()
- vim.api.nvim_buf_set_lines(win_self.obj_bufnr, 0, -1, true, inspect.inspect(state.instances[win_self.target].store))
+
 --vim.api.nvim_buf_call(self.obj_bufnr, function()
 -- remember window has to be open before, if you want to not automatically open window on run you have to set autocmd and find au that can load fold marker on win load
 --vim.api.nvim_command([[exe "norm! gg=G"]])
 --end)
-lo(win_self)
-  local contents = Border._create_lines(win_self.obj_opts, win_self.border_opts.obj)
- lo(contents)
- lo(win_self.obj_bufnr)
-  vim.api.nvim_buf_set_lines(win_self.obj_bufnr, 0, -1, false, contents)
- vim.api.nvim_buf_set_lines(win_self.obj_bufnr, 0, -1, false, {'a test', 'asd'})
 
 --end, 1)
 

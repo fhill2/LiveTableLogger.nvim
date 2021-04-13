@@ -1,6 +1,6 @@
 local windows = {}
 
-local popup = require('popup')
+local popup = require('livetablelogger/popup')
 local state = require'livetablelogger/state'
 local log = require'livetablelogger/log'
 
@@ -35,8 +35,8 @@ opts = opts or {}
 -- otherwise obj & log padding get_defaults nil error
 opts.obj_padding = opts.obj_padding or {}
 opts.log_padding = opts.log_padding or {}
-opts.border = opts.border or {}
-opts.border.thickness = opts.border.thickness or {}
+--opts.border = opts.border or {}
+--opts.border.thickness = opts.border.thickness or {}
 --- test for multiple windows
 -- for k,v in pairs(opts) do
 -- if k:find('^view[%d]*') ~= nil then 
@@ -48,6 +48,11 @@ opts.border.thickness = opts.border.thickness or {}
 --local obj = {}
 
 custom_opts = {
+show_border = get_default(opts.show_border, true),
+border_thickness = get_default(opts.border_thickness, { 1,1,1,1}),
+borderchars = get_default(opts.borderchars, { '─', '│', '─', '│', '╭', '╮', '╯', '╰'}),
+obj_border_title = get_default(opts.obj_title, 'obj'),
+log_border_title = get_default(opts.log_title, 'log'),
 x = get_default(opts.x, 0),
  y = get_default(opts.y, 0),
 layout = get_default(opts.layout, 'vertical'),
@@ -58,8 +63,6 @@ grow = get_default(opts.grow, true),
 grow_side = get_default(opts.grow_size, 'smart'),
 winblend = get_default(opts.winblend, 15 ),
 split = get_default(opts.split, 0.5),
---padding_outer = get_default(opts.padding_inner, 1),
---padding_inner = get_default(opts.padding_outer, 1)
 gap = get_default(opts.gap, 0),
 }
 
@@ -107,38 +110,68 @@ end
 
 
 
-opts.border.borderchars = get_default(opts.border.borderchars, { '─', '│', '─', '│', '╭', '╮', '╯', '╰'})
 
-opts.border.obj_border_opts = {
-title = get_default(opts.border.obj_title, 'obj'),
-border_thickness = { 
-top = get_default(opts.border.thickness.top, 1),
-right = get_default(opts.border.thickness.right, 1),
-bot = get_default(opts.border.thickness.bot, 1),
-left = get_default(opts.border.thickness.left, 1),
+-- VALIDATE BORDER OPTS snd save back to custom_opts
+
+local border_default_thickness = {
+  top = 1,
+  right = 1,
+  bot = 1,
+  left = 1,
 }
-}
-
-opts.border.log_border_opts = {
-title = get_default(opts.border.log_title, 'log'),
-border_thickness = { 
-top = get_default(opts.border.thickness.top, 1),
-right = get_default(opts.border.thickness.right, 1),
-bot = get_default(opts.border.thickness.bot, 1),
-left = get_default(opts.border.thickness.left, 1),
-}
-}
-
-  -- borderchars list to kv for plenary border
-local borderchars_kv = {}
-local titlechars = { 'top', 'left', 'bot', 'right', 'topleft', 'topright', 'botright', 'botleft' }
-for i, v in ipairs(opts.border.borderchars) do
-borderchars_kv[titlechars[i]] = v
-end
+   local border_options = {}
 
 
-obj_border_opts = vim.tbl_extend('keep', borderchars_kv, opts.border.obj_border_opts )
-log_border_opts = vim.tbl_extend('keep', borderchars_kv,  opts.border.log_border_opts )
+  if custom_opts.show_border then
+    if type(custom_opts.border_thickness) == 'boolean' or vim.tbl_isempty(custom_opts.border_thickness) then
+      border_options.border_thickness = border_default_thickness
+    elseif #custom_opts.border_thickness == 4 then
+      border_options.border_thickness = {
+        top = utils.bounded(custom_opts.border_thickness[1], 0, 1),
+        right = utils.bounded(custom_opts.border_thickness[2], 0, 1),
+        bot = utils.bounded(custom_opts.border_thickness[3], 0, 1),
+        left = utils.bounded(custom_opts.border_thickness[4], 0, 1),
+      }
+    end
+  end
+
+    local b_top, b_right, b_bot, b_left, b_topleft, b_topright, b_botright, b_botleft
+    if custom_opts.borderchars == nil then
+      b_top , b_right , b_bot , b_left , b_topleft , b_topright , b_botright , b_botleft =
+        "═" , "║"     , "═"   , "║"    , "╔"       , "╗"        , "╝"        , "╚"
+    elseif #custom_opts.borderchars == 1 then
+      local b_char = custom_opts.borderchars[1]
+      b_top    , b_right , b_bot  , b_left , b_topleft , b_topright , b_botright , b_botleft =
+        b_char , b_char  , b_char , b_char , b_char    , b_char     , b_char     , b_char
+    elseif #custom_opts.borderchars == 2 then
+      local b_char = custom_opts.borderchars[1]
+      local c_char = custom_opts.borderchars[2]
+      b_top    , b_right , b_bot  , b_left , b_topleft , b_topright , b_botright , b_botleft =
+        b_char , b_char  , b_char , b_char , c_char    , c_char     , c_char     , c_char
+    elseif #custom_opts.borderchars == 8 then
+      b_top , b_right , b_bot , b_left , b_topleft , b_topright , b_botright , b_botleft = unpack(custom_opts.borderchars)
+    else
+      error(string.format('Not enough arguments for "borderchars"'))
+    end
+
+    border_options.top = b_top
+    border_options.bot = b_bot
+    border_options.right = b_right
+    border_options.left = b_left
+    border_options.topleft = b_topleft
+    border_options.topright = b_topright
+    border_options.botright = b_botright
+    border_options.botleft = b_botleft
+
+
+custom_opts.borderchars = border_options.borderchars
+custom_opts.border_thickness = border_options.border_thickness
+
+obj_border_opts = vim.tbl_extend('keep', border_options, { title = get_default(opts.obj_border_title, 'obj')})
+log_border_opts = vim.tbl_extend('keep', border_options, { title = get_default(opts.log_border_title, 'log')})
+
+
+
 
 
 
@@ -318,6 +351,13 @@ end
 obj_opts = apply_padding(obj_opts, custom_opts, 'obj')
 log_opts = apply_padding(log_opts, custom_opts, 'log')
 
+-- add/convert into what popup create wants
+-- obj_opts.minheight = obj_opts.height
+-- log_opts.minheight = log_opts.height
+--obj_opts.line = obj_opts.row
+--log_opts.line = log_opts.row
+
+
 --renderer = renderer:new() 
 
 lo('window return')
@@ -326,12 +366,10 @@ return setmetatable({
 target = opts.target,
 obj_opts = obj_opts,
 log_opts = log_opts,
+obj_border_opts = obj_border_opts,
+log_border_opts = log_border_opts,
 custom_opts = custom_opts,
-total_opts = total_opts,
-border_opts = {
-obj = obj_border_opts,
-log = log_border_opts
-} 
+total_opts = total_opts
 } , self)
 
 -- not the same as values returned
@@ -350,8 +388,16 @@ end
 
 
 
+
+
+
+
+
+
+
 function Window:open()
 lo('window open')
+
 
 self.total_opts.win = vim.api.nvim_get_current_win()
 if self.total_opts.relative == 'win' then 
@@ -361,9 +407,31 @@ self.log_opts.win = vim.api.nvim_get_current_win() end
 
 
 
-local function open_window(bufnr, popup_opts, custom_opts, objorlog)
-local objorlog_winnr = vim.api.nvim_open_win(bufnr, false, popup_opts)
 
+
+local function open_window(popup_opts, custom_opts, objorlog)
+
+local border_opts = self[objorlog .. '_border_opts']
+
+
+
+-- 1 create buf
+local bufnr = vim.api.nvim_create_buf(false, true)
+vim.api.nvim_buf_set_option(bufnr, 'filetype', 'lua')
+
+self.bufnr[objorlog] = bufnr
+
+
+-- 2 create win
+local objorlog_winnr = vim.api.nvim_open_win(bufnr, false, popup_opts)
+local border = Border:new(bufnr, objorlog_winnr, popup_opts, border_opts)
+
+
+--local popup_winnr, border_opts = popup.create('', popup_opts)
+self.winnr[objorlog .. '_win'] = objorlog_winnr
+self.winnr[objorlog .. '_border'] = border.win_id
+self.border = border
+-- no need to return win_opts or border_opts as they are the same as constructor return to self
 
 vim.api.nvim_win_set_option(winnr, 'winblend', 15)
 
@@ -374,29 +442,30 @@ vim.cmd([[set foldmethod=marker]])
 end)
 
 lo('before renderer new')
-self.renderer = renderer:new(self) -- renderer new creates buffers as its one time 
+--self.renderer = renderer:new(self) -- renderer new creates buffers as its one time 
 lo('after renderer refresh')
 -- apply border after contents in renderer refresh
 -- here runs open win. 
 
-
-return objorlog_winnr
 end
+
+self.bufnr = {}
+self.winnr = {}
 
 if self.custom_opts.log then
-self.obj_winnr, self.obj_border_winnr = open_window(self.obj_bufnr, self.obj_opts, self.custom_opts,  'obj')
-self.log_winnr, self.log_border_winnr = open_window(self.log_bufnr, self.log_opts, self.custom_opts, 'log')
+open_window(self.obj_opts, self.custom_opts,  'obj')
+open_window(self.log_opts, self.custom_opts, 'log')
 else
-self.obj_winnr, self.obj_border_winnr = open_window(self.obj_bufnr, self.total_opts, self.custom_opts, 'obj')
+open_window(self.total_opts, self.custom_opts, 'obj')
 end
 
-renderer:refresh(self) -- to write contents
+lo(state.ui)
 
--- local border = require'plenary/window/border'
 
--- local borderchars = { '─', '│', '─', '│', '╭', '╮', '╯', '╰'}
 
--- local border_winnr = border.
+-- write contents onto newly created window/buffer
+renderer:refresh(self)
+
 
 
 
@@ -407,7 +476,21 @@ end
 
 
 
+function Window:resize()
 
+-- local resize = {
+-- col = self.log_opts.col + 4
+-- row = self.log_opts.row + 4
+-- }
+
+self.log_opts.col = self.log_opts.col + 4
+self.log_opts.row = self.log_opts.row + 4
+self.log_opts.title = nil
+
+
+vim.api.nvim_win_set_config(self.winnr.obj_border, self.log_opts)
+
+end
 
 
 
