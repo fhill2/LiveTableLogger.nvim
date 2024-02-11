@@ -15,7 +15,7 @@ local entry_display = require('telescope.pickers.entry_display')
 local sorters = require "telescope.sorters"
 local conf = require('telescope.config').values
 
-local state = require'livetablelogger/state'
+local state = require'floating/state'
 
 
 

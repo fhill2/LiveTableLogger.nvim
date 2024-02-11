@@ -39,12 +39,19 @@ end
 
 
 
-function Renderer:refresh(win_self)
+function Renderer:render(win_self)
   local obj = {}
 --lo('renderer refresh here')
 
-vim.api.nvim_buf_set_lines(win_self.bufnr.obj, 0, -1, true, inspect.inspect(state.instances[win_self.target].store))
- --- actual renderer above here
+
+local inspectobj = inspect.inspect(state.instances[win_self.target].store)
+self.inspect_count = #inspectobj
+vim.api.nvim_buf_set_lines(win_self.bufnr.obj_content, 0, -1, true, inspectobj) 
+
+
+
+
+--- actual renderer above here
 --vim.defer_fn(function()
 
 --vim.api.nvim_buf_call(self.obj_bufnr, function()
@@ -55,8 +62,8 @@ vim.api.nvim_buf_set_lines(win_self.bufnr.obj, 0, -1, true, inspect.inspect(stat
 --end, 1)
 
 -- Border:new(win_self.obj_bufnr, win_self.obj_opts, win_self.obj_border_opts)
-
-
+--if inspectobj 
+window:refresh()
 
 end
 

@@ -1,6 +1,6 @@
 local windows = {}
 
-local popup = require('livetablelogger/popup')
+--local popup = require('livetablelogger/popup')
 local state = require'livetablelogger/state'
 local log = require'livetablelogger/log'
 
@@ -9,7 +9,7 @@ local get_default = utils.get_default
 local ternary = utils.ternary
 
 local config = require'livetablelogger/config'
-local border = require'plenary/window/border'
+--local border = require'plenary/window/border'
 
 local renderer = require'livetablelogger/renderer'
 
@@ -56,7 +56,7 @@ log_border_title = get_default(opts.log_title, 'log'),
 x = get_default(opts.x, 0),
  y = get_default(opts.y, 0),
 layout = get_default(opts.layout, 'vertical'),
-pin = get_default(opts.pin, 'top'),
+pin = get_default(opts.pin, 'bottom'),
 center = get_default(opts.center, true),
 log = get_default(opts.log, true),
 grow = get_default(opts.grow, true),
@@ -369,7 +369,9 @@ log_opts = log_opts,
 obj_border_opts = obj_border_opts,
 log_border_opts = log_border_opts,
 custom_opts = custom_opts,
-total_opts = total_opts
+total_opts = total_opts,
+border = Border:new(obj_opts, obj_border_opts),
+--log_border = Border:new(log_opts, log_border_opts, 'log'),
 } , self)
 
 -- not the same as values returned
@@ -398,6 +400,7 @@ end
 function Window:open()
 lo('window open')
 
+--lo(state.ui)
 
 self.total_opts.win = vim.api.nvim_get_current_win()
 if self.total_opts.relative == 'win' then 
@@ -409,7 +412,7 @@ self.log_opts.win = vim.api.nvim_get_current_win() end
 
 
 
-local function open_window(popup_opts, custom_opts, objorlog)
+local function open_window(objorlog)
 
 local border_opts = self[objorlog .. '_border_opts']
 
@@ -419,18 +422,19 @@ local border_opts = self[objorlog .. '_border_opts']
 local bufnr = vim.api.nvim_create_buf(false, true)
 vim.api.nvim_buf_set_option(bufnr, 'filetype', 'lua')
 
-self.bufnr[objorlog] = bufnr
+self.bufnr[objorlog .. '_content'] = bufnr
 
 
 -- 2 create win
-local objorlog_winnr = vim.api.nvim_open_win(bufnr, false, popup_opts)
-local border = Border:new(bufnr, objorlog_winnr, popup_opts, border_opts)
+local objorlog_winnr = vim.api.nvim_open_win(bufnr, false, self[objorlog .. '_opts'])
+lo(objorlog)
+self.border:open(self, objorlog)
 
 
 --local popup_winnr, border_opts = popup.create('', popup_opts)
 self.winnr[objorlog .. '_win'] = objorlog_winnr
-self.winnr[objorlog .. '_border'] = border.win_id
-self.border = border
+
+
 -- no need to return win_opts or border_opts as they are the same as constructor return to self
 
 vim.api.nvim_win_set_option(winnr, 'winblend', 15)
@@ -453,18 +457,17 @@ self.bufnr = {}
 self.winnr = {}
 
 if self.custom_opts.log then
-open_window(self.obj_opts, self.custom_opts,  'obj')
-open_window(self.log_opts, self.custom_opts, 'log')
+open_window('obj')
+open_window('log')
 else
-open_window(self.total_opts, self.custom_opts, 'obj')
+open_window('obj')
 end
 
-lo(state.ui)
 
 
 
 -- write contents onto newly created window/buffer
-renderer:refresh(self)
+renderer:render(self)
 
 
 

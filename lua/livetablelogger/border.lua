@@ -1,15 +1,10 @@
-local tbl = require('plenary.tbl')
+--local tbl = require('plenary.tbl')
 
 local Border = {}
 
 Border.__index = Border
 
-Border._default_thickness = {
-  top = 1,
-  right = 1,
-  bot = 1,
-  left = 1,
-}
+
 
 function Border._create_lines(content_win_options, border_win_options)
   -- TODO: Handle border width, which I haven't right here.
@@ -83,81 +78,80 @@ function Border._create_lines(content_win_options, border_win_options)
   return border_lines
 end
 
-function Border:change_title(new_title)
-  if self._border_win_options.title == new_title then return end
 
-  self._border_win_options.title = new_title
-  self.contents = Border._create_lines(self.content_win_options, self._border_win_options)
-  vim.api.nvim_buf_set_lines(self.bufnr, 0, -1, false, self.contents)
+local function transform_content_win_to_border_win_opts(content_win_opts)
+local border_win_opts = {
+    anchor = content_win_opts.anchor,
+    relative = content_win_opts.relative,
+    style = "minimal",
+    row = content_win_opts.row - thickness.top,
+    col = content_win_opts.col - thickness.left,
+    width = content_win_opts.width + thickness.left + thickness.right,
+    height = content_win_opts.height + thickness.top + thickness.bot,
+  }
+return border_win_opts
 end
 
-function Border:new(content_bufnr, content_win_id, content_win_options, border_win_options)
-  -- lo('border trig')
-  -- assert(type(content_win_id) == 'number', "Must supply a valid win_id. It's possible you forgot to call with ':'")
-
-  -- -- TODO: Probably can use just deep_extend, now that it's available
-  -- border_win_options = tbl.apply_defaults(border_win_options, {
-  --   border_thickness = Border._default_thickness,
-
-  --   -- Border options, could be passed as a list?
-  --   topleft  = '╔',
-  --   topright = '╗',
-  --   top      = '═',
-  --   left     = '║',
-  --   right    = '║',
-  --   botleft  = '╚',
-  --   botright = '╝',
-  --   bot      = '═',
-  -- })
-
-  local obj = {}
-
-  obj.content_win_id = content_win_id
-  obj.content_win_options = content_win_options
-  obj._border_win_options = border_win_options
 
 
-  obj.bufnr = vim.api.nvim_create_buf(false, true)
-  assert(obj.bufnr, "Failed to create border buffer")
-  vim.api.nvim_buf_set_option(obj.bufnr, "bufhidden", "wipe")
 
-  obj.contents = Border._create_lines(content_win_options, border_win_options)
-  vim.api.nvim_buf_set_lines(obj.bufnr, 0, -1, false, obj.contents)
+function Border:new(popup_opts, border_opts)
 
-  local thickness = border_win_options.border_thickness
-lo('border content win opts: ')
-lo(content_win_options.relative)
+local border_opts = popup_opts
 
-
-local win_opts = {
-    anchor = content_win_options.anchor,
-    relative = content_win_options.relative,
-    style = "minimal",
-    row = content_win_options.row - thickness.top,
-    col = content_win_options.col - thickness.left,
-    width = content_win_options.width + thickness.left + thickness.right,
-    height = content_win_options.height + thickness.top + thickness.bot,
-  }
-
-if content_win_options.win then win_opts.win = content_win_options.win end
-
-  obj.win_id = vim.api.nvim_open_win(obj.bufnr, false, win_opts)
-
-  -- vim.cmd(string.format(
-  --   "autocmd BufLeave,BufDelete <buffer=%s> ++nested ++once :lua require('plenary.window').close_related_win(%s, %s)",
-  --   content_bufnr,
-  --   content_win_id,
-  --   obj.win_id))
-
-  -- vim.cmd(string.format(
-  --   "autocmd WinClosed,WinLeave <buffer=%s> ++nested ++once :lua require('plenary.window').try_close(%s, true)",
-  --   content_bufnr,
-  --   obj.win_id))
+--local obj = {objlog = objlog}
+local obj = setmetatable({}, Border)
+return obj
+end
 
 
-  setmetatable(obj, Border)
 
-  return obj
+
+
+function Border:open(win_self, objorlog)
+lo('border open trig')
+--lo(self)
+lo(win_self)
+--lo(objorlog)
+local content_win_opts = win_self[objorlog .. '_opts']
+local border_opts = win_self[objorlog .. '_border_opts']
+
+
+ local bufnr_border = vim.api.nvim_create_buf(false, true)
+ win_self.bufnr[objorlog .. '_border'] = bufnr_border
+
+ -- assert(obj.bufnr, "Failed to create border buffer")
+  vim.api.nvim_buf_set_option(bufnr_border, "bufhidden", "wipe")
+
+ local border_contents = Border._create_lines(content_win_opts, border_opts)
+  vim.api.nvim_buf_set_lines(bufnr_border, 0, -1, false, border_contents)
+
+
+
+  local thickness = win_self[objorlog .. '_border_opts'].border_thickness
+-- lo('border content win opts: ')
+-- lo(content_win_options.relative)
+
+local border_win_opts = transform_content_win_to_border_win_opts(content_win_opts)
+
+
+win_self.winnr[objorlog .. '_border'] = vim.api.nvim_open_win(bufnr_border, false, border_win_opts)
+
+
+--win_self.winnr[objorlog .. '_border'] = vim.api.nvim_open_win(win_self.bufnr[objorlog .. '_border'], false, win_self[objorlog .. '_opts'])
+
+
+
+
+
+end
+
+function Border:refresh(win_self, objorlog)
+
+--  obj.contents = Border._create_lines(content_win_options, border_win_options)
+--  vim.api.nvim_buf_set_lines(obj.bufnr, 0, -1, false, obj.contents)
+-- then nvim win set config instead of nvim win open
+
 end
 
 
